@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reproductor Seguro (Base64 + Expiración)</title>
+  <style>
+    body {
+      background: #000;
+      color: #ffd700;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+    }
+    h2 {
+      margin-top: 50px;
+    }
+    video {
+      width: 100%;
+      max-width: 720px;
+      border: 3px solid #ffd700;
+      border-radius: 12px;
+      margin-top: 20px;
+    }
+    .error {
+      color: #ff4444;
+      font-weight: bold;
+      margin-top: 50px;
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <h2>?? Reproductor Seguro</h2>
+  <div id="contenedor"></div>
+
+  <script>
+    const dominioBase = "https://zinecia.github.io/contenido";
+    const urlActual = window.location.href;
+    const ref = document.referrer || "";
+    const params = new URLSearchParams(window.location.search);
+    const expira = parseInt(params.get("expira")) || 0;
+    const ahora = Date.now();
+    const r = params.get("r");  // Parámetro base64 con URL real
+
+    function mostrarError(msg) {
+      document.getElementById('contenedor').innerHTML = `<div class="error">?? ${msg}</div>`;
+    }
+
+    function mostrarVideo(urlVideo) {
+      document.getElementById('contenedor').innerHTML = `
+        <video controls autoplay>
+          <source src="${urlVideo}" type="video/mp4" />
+          Tu navegador no soporta reproducción de video.
+        </video>
+      `;
+    }
+
+    function decodeBase64(str) {
+      try {
+        return atob(str);
+      } catch(e) {
+        return null;
+      }
+    }
+
+    const estaEnDominio = urlActual.startsWith(dominioBase) || ref.startsWith(dominioBase);
+
+    if (!r) {
+      mostrarError("No se encontró URL válida.");
+    } else {
+      const urlVideo = decodeBase64(r);
+      if (!urlVideo) {
+        mostrarError("URL codificada inválida.");
+      } else if (estaEnDominio) {
+        // Dentro del dominio base ? No expira
+        mostrarVideo(urlVideo);
+      } else {
+        // Fuera del dominio ? validar expiración
+        if (expira === 0) {
+          mostrarError("Enlace inválido o sin expiración.");
+        } else if (ahora > expira) {
+          mostrarError("Enlace expirado.");
+        } else {
+          mostrarVideo(urlVideo);
+        }
+      }
+    }
+  </script>
+</body>
+</html>
