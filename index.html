@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Generador Enlace para Reproductor JWPL</title>
+  <title>Generador de Enlace Seguro</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -35,14 +35,13 @@
       font-weight: bold;
       text-align: left;
     }
-    input[type="text"], input[type="password"] {
+    input[type="text"] {
       width: 100%;
       padding: 12px;
       border-radius: 8px;
       border: 1px solid #007bff;
       margin-bottom: 15px;
       font-size: 14px;
-      color: #000;
     }
     button {
       width: 100%;
@@ -67,7 +66,6 @@
       padding: 10px;
       border-radius: 8px;
       font-size: 14px;
-      color: #ffd700;
     }
     #copy-message {
       margin-top: 10px;
@@ -75,92 +73,82 @@
       font-weight: bold;
       display: none;
     }
+    #preview-iframe {
+      margin-top: 20px;
+      width: 100%;
+      height: 220px;
+      border-radius: 8px;
+      border: none;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>🔐 Generador para JWPL Player</h2>
+    <h2>Lz Script NO-ADS - Generador</h2>
+    <label for="urlInput">Pega el enlace real (MP4 o M3U8):</label>
+    <input type="text" id="urlInput" placeholder="https://ejemplo.com/video.mp4" />
+    <button id="generateBtn">Generar enlace protegido</button>
 
-    <div id="login-block">
-      <label for="passwordInput">Clave de acceso:</label>
-      <input type="password" id="passwordInput" placeholder="Ingresa la clave" />
-      <button id="loginBtn">Acceder</button>
-    </div>
-
-    <div id="generator-block" style="display:none;">
-      <label for="contentInput">Pega la URL real del video:</label>
-      <input type="text" id="contentInput" placeholder="https://..." />
-      <button id="generateBtn">Generar enlace JWPL</button>
-
-      <div id="output-container">
-        <strong>Enlace generado:</strong>
-        <div id="outputUrl"></div>
-        <button id="copyBtn">Copiar enlace</button>
-        <div id="copy-message">Enlace copiado al portapapeles</div>
-      </div>
+    <div id="output-container">
+      <strong>Enlace generado:</strong>
+      <div id="outputUrl"></div>
+      <button id="copyBtn">Copiar enlace</button>
+      <div id="copy-message">Enlace copiado al portapapeles</div>
+      <iframe id="preview-iframe" sandbox="allow-scripts allow-same-origin allow-popups" allowfullscreen></iframe>
     </div>
   </div>
 
-<script>
-  const correctPassword = "LzClave123"; // Cambia la clave aquí
+  <script>
+    const generateBtn = document.getElementById('generateBtn');
+    const urlInput = document.getElementById('urlInput');
+    const outputContainer = document.getElementById('output-container');
+    const outputUrl = document.getElementById('outputUrl');
+    const copyBtn = document.getElementById('copyBtn');
+    const copyMessage = document.getElementById('copy-message');
+    const previewIframe = document.getElementById('preview-iframe');
 
-  const loginBlock = document.getElementById('login-block');
-  const generatorBlock = document.getElementById('generator-block');
-  const passwordInput = document.getElementById('passwordInput');
-  const loginBtn = document.getElementById('loginBtn');
+    const desencriptadorBaseURL = 'https://lzwebvideo.github.io/lzview/desencriptador.html';
 
-  const contentInput = document.getElementById('contentInput');
-  const generateBtn = document.getElementById('generateBtn');
-  const outputContainer = document.getElementById('output-container');
-  const outputUrl = document.getElementById('outputUrl');
-  const copyBtn = document.getElementById('copyBtn');
-  const copyMessage = document.getElementById('copy-message');
+    generateBtn.addEventListener('click', () => {
+      const videoUrl = urlInput.value.trim();
+      if (!videoUrl) {
+        alert('Por favor, ingresa una URL válida.');
+        return;
+      }
 
-  loginBtn.addEventListener('click', () => {
-    if(passwordInput.value === correctPassword) {
-      loginBlock.style.display = 'none';
-      generatorBlock.style.display = 'block';
-    } else {
-      alert('Clave incorrecta.');
-    }
-  });
+      // Validar que enlace sea directo a video (mp4 o m3u8)
+      const videoExtRegex = /\.(mp4|m3u8)(\?.*)?$/i;
+      if (!videoExtRegex.test(videoUrl)) {
+        alert('Solo se permiten enlaces directos a archivos de video .mp4 o .m3u8');
+        return;
+      }
 
-  generateBtn.addEventListener('click', () => {
-    const urlReal = contentInput.value.trim();
-    if (!urlReal) {
-      alert('Por favor, ingresa una URL válida.');
-      return;
-    }
-    const base64url = btoa(urlReal);
-    const expira = Date.now() + 12 * 60 * 60 * 1000; // 12 horas ms
+      const playerUrl = `https://lzrdrgz01.github.io/web?player=jwpl&provider=rand&format=video/mp4&link=${encodeURIComponent(videoUrl)}`;
 
-    // Aquí pones la carpeta /contenidoXXX/ fija o dinámica
-    // Si quieres dinámica, puedes pedir que escriban el número y concatenar
-    // Por ejemplo, aquí uso contenido305 fijo para que adaptes fácil
-    const contenidoCarpeta = "305";
+      const encoded = btoa(playerUrl);
+      const generatedLink = `${desencriptadorBaseURL}?r=${encoded}`;
 
-    const urlDesencriptador = `https://zinecia.github.io/contenido${contenidoCarpeta}/index.html?r=${base64url}&expira=${expira}`;
-    const urlFinal = encodeURIComponent(urlDesencriptador);
+      outputUrl.textContent = generatedLink;
+      outputContainer.style.display = 'block';
+      copyMessage.style.display = 'none';
 
-    const enlaceJWPL = `https://lzrdrgz01.github.io/web?player=jwpl&provider=rand&format=video%2Fmp4&link=${urlFinal}`;
-
-    outputUrl.textContent = enlaceJWPL;
-    outputContainer.style.display = 'block';
-    copyMessage.style.display = 'none';
-  });
-
-  copyBtn.addEventListener('click', () => {
-    const text = outputUrl.textContent;
-    if (!text) return;
-    navigator.clipboard.writeText(text).then(() => {
-      copyMessage.style.display = 'block';
-      setTimeout(() => {
-        copyMessage.style.display = 'none';
-      }, 1500);
-    }).catch(() => {
-      alert('Error al copiar el enlace.');
+      previewIframe.src = generatedLink;
+      previewIframe.style.display = 'block';
     });
-  });
-</script>
+
+    copyBtn.addEventListener('click', () => {
+      const text = outputUrl.textContent;
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => {
+        copyMessage.style.display = 'block';
+        setTimeout(() => {
+          copyMessage.style.display = 'none';
+        }, 1500);
+      }).catch(() => {
+        alert('Error al copiar el enlace.');
+      });
+    });
+  </script>
 </body>
 </html>
