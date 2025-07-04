@@ -84,6 +84,22 @@
   </style>
 </head>
 <body>
+  <script disable-devtool-auto src='https://cdn.jsdelivr.net/npm/disable-devtool@latest'></script>
+  <script>
+  const passwordCorrecta = "1723"; // Cambia aquí la contraseña
+
+  function pedirContrasena() {
+    let intento = prompt("Introduce la contraseña para acceder al generador:");
+    if (intento === null || intento !== passwordCorrecta) {
+      alert("Contraseña incorrecta. No puedes acceder.");
+      
+      window.location.href = ""; 
+    }
+  }
+
+  pedirContrasena();
+</script>
+
   <div class="container">
     <h2>Lz Script NO-ADS - Generador</h2>
     <label for="urlInput">Pega el enlace real (MP4 o M3U8):</label>
