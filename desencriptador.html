@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Reproductor Seguro (Base64 + ExpiraciÛn)</title>
+  <title>Redirecci√≥n Segura</title>
   <style>
     body {
       background: #000;
@@ -11,16 +11,6 @@
       text-align: center;
       padding: 20px;
       margin: 0;
-    }
-    h2 {
-      margin-top: 50px;
-    }
-    video {
-      width: 100%;
-      max-width: 720px;
-      border: 3px solid #ffd700;
-      border-radius: 12px;
-      margin-top: 20px;
     }
     .error {
       color: #ff4444;
@@ -31,7 +21,7 @@
   </style>
 </head>
 <body>
-  <h2>?? Reproductor Seguro</h2>
+  <h2>‚è≥ Procesando Enlace Seguro...</h2>
   <div id="contenedor"></div>
 
   <script>
@@ -41,19 +31,10 @@
     const params = new URLSearchParams(window.location.search);
     const expira = parseInt(params.get("expira")) || 0;
     const ahora = Date.now();
-    const r = params.get("r");  // Par·metro base64 con URL real
+    const r = params.get("r");
 
     function mostrarError(msg) {
-      document.getElementById('contenedor').innerHTML = `<div class="error">?? ${msg}</div>`;
-    }
-
-    function mostrarVideo(urlVideo) {
-      document.getElementById('contenedor').innerHTML = `
-        <video controls autoplay>
-          <source src="${urlVideo}" type="video/mp4" />
-          Tu navegador no soporta reproducciÛn de video.
-        </video>
-      `;
+      document.getElementById('contenedor').innerHTML = <div class="error">‚ö†Ô∏è ${msg}</div>;
     }
 
     function decodeBase64(str) {
@@ -67,25 +48,27 @@
     const estaEnDominio = urlActual.startsWith(dominioBase) || ref.startsWith(dominioBase);
 
     if (!r) {
-      mostrarError("No se encontrÛ URL v·lida.");
+      mostrarError("No se encontr√≥ URL v√°lida.");
     } else {
       const urlVideo = decodeBase64(r);
       if (!urlVideo) {
-        mostrarError("URL codificada inv·lida.");
+        mostrarError("URL codificada inv√°lida.");
       } else if (estaEnDominio) {
-        // Dentro del dominio base ? No expira
-        mostrarVideo(urlVideo);
+        // Dentro del dominio base ‚Üí Redirige sin caducidad
+        window.location.href = urlVideo;
       } else {
-        // Fuera del dominio ? validar expiraciÛn
+        // Fuera del dominio base ‚Üí validar expiraci√≥n
         if (expira === 0) {
-          mostrarError("Enlace inv·lido o sin expiraciÛn.");
+          mostrarError("Enlace inv√°lido o sin expiraci√≥n.");
         } else if (ahora > expira) {
           mostrarError("Enlace expirado.");
         } else {
-          mostrarVideo(urlVideo);
+          // Todo bien ‚Üí redirige
+          window.location.href = urlVideo;
         }
       }
     }
   </script>
 </body>
 </html>
+
